@@ -5,6 +5,6 @@ Kibana plugin displaying segment distribution
 
 In development :
 run form the shell :
-grunt whatch
+grunt watch
 
 That will compile the coffee files into js 
