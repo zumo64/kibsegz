@@ -1,0 +1,35 @@
+<div class="container">
+  <div class="params">
+    
+    <div class="paramsItem">
+      
+      <p>Select an index</p>
+      <select ng-model="selectedIndex" ng-options="index.name for index in indices" ng-change="onChange()">
+
+      </select>
+      
+    </div>
+   
+    
+    
+    <div class="paramsItem">
+           
+      <p>Refresh Rate (seconds)</p>
+      <select ng-model="selectedRate" ng-options="rate.value for rate in rates" ng-change="onRateChange()">
+
+      </select>
+    </div>
+    
+    
+    
+  </div>
+</div>
+
+
+
+<div class="segments">
+    <span ng-repeat="shard in shards">  
+      <segment metrics="shard"/>
+    </span>
+
+</div>
