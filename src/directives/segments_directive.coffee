@@ -1,6 +1,6 @@
 d3bar = require '../../lib/d3stackbar.js'
 
-app = require('ui/modules').get('app/segments', [])
+app = require('ui/modules').get('app/kibsegz', [])
 
 app.directive 'segment',  ($compile, $rootScope) ->
   restrict: 'EA'

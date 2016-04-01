@@ -1,6 +1,6 @@
 {
-  "name": "kibsegs",
-  "version": "0.0.0",
+  "name": "kibsegz",
+  "version": "0.0.1",
   "description": "Display segment allocation in real time",
   "main": "index.js",
   "scripts": {

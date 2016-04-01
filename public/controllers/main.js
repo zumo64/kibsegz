@@ -11,7 +11,7 @@
 
   $ = require('jquery');
 
-  require('plugins/segments/directives/segments_directive');
+  require('plugins/kibsegz/directives/segments_directive');
 
   require('ui/autoload/styles');
 
@@ -31,7 +31,7 @@
     controllerAs: 'ctrl'
   });
 
-  uiModules.get('app/segments', []).controller('mainController', function($http, $scope, $interval) {
+  uiModules.get('app/kibsegz', []).controller('mainController', function($http, $scope, $interval) {
     var getMetrics, indexName, pro, selRate, startInterval;
     $scope.indices = [];
     $scope.shards = [];
@@ -48,7 +48,7 @@
     indexName = null;
     pro = null;
     getMetrics = function() {
-      $http.get("../api/segments/" + $scope.selectedIndex.name).then(function(response) {
+      $http.get("../api/kibsegz/" + $scope.selectedIndex.name).then(function(response) {
         var i, nbShards, numSegments, segmentDetails, segmentKey, segments, segmentsHead, shard, shardDetails, _i, _results;
         nbShards = response.data._shards.successful;
         shardDetails = response.data.indices["" + indexName].shards;
@@ -83,7 +83,7 @@
         return getMetrics(indexName);
       }, selRate * 1000);
     };
-    $http.get("../api/segments/_health").then(function(response) {
+    $http.get("../api/kibsegz/_health").then(function(response) {
       var index, _i, _len, _ref, _results;
       if (response.data != null) {
         _ref = response.data;

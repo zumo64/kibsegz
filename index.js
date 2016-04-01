@@ -10,11 +10,8 @@ export default function (kibana) {
       app: {
         title: 'Kibsegz',
         description: 'Display segment allocation in real time',
-        main: 'plugins/kibsegs/controllers/main'
-      },
-      hacks: [
-        'plugins/kibsegz/hack'
-      ]
+        main: 'plugins/kibsegz/controllers/main'
+      }
     },
 
     config(Joi) {

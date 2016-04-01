@@ -2,16 +2,13 @@ moment =  require 'moment'
 chrome =  require 'ui/chrome'
 uiModules =  require 'ui/modules'
 uiRoutes =  require 'ui/routes'
-
-#d3bar = require '../../lib/d3bar.js'
 $ = require 'jquery'
 
-require 'plugins/segments/directives/segments_directive'
-# require '../directives/segments_directive.js'
+require 'plugins/kibsegz/directives/segments_directive'
 require 'ui/autoload/styles'
 require '../less/main.less'
 require '../templates/bar.css'
-#import template from './templates/index.html';
+
 segmentsChooseIndex =  require '../templates/index.html'
 
 
@@ -25,7 +22,7 @@ uiRoutes.when '/',
 
 
 uiModules
-.get('app/segments', [])
+.get('app/kibsegz', [])
 .controller 'mainController',   ($http,$scope,$interval) ->
   $scope.indices = []
   $scope.shards = []
@@ -36,7 +33,7 @@ uiModules
   
   
   getMetrics = () ->
-    $http.get("../api/segments/#{$scope.selectedIndex.name}").then (response) ->
+    $http.get("../api/kibsegz/#{$scope.selectedIndex.name}").then (response) ->
       nbShards = response.data._shards.successful
       #console.log "num shards #{nbShards} #{indexName}"
       shardDetails = response.data.indices["#{indexName}"].shards
@@ -70,7 +67,7 @@ uiModules
     
   
   # Get list of indices
-  $http.get("../api/segments/_health").then (response) ->
+  $http.get("../api/kibsegz/_health").then (response) ->
     if response.data? 
       for index in response.data when index
         $scope.indices.push({name:index})
