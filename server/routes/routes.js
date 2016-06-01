@@ -5,9 +5,23 @@ export default function (server) {
     method: 'GET',
     handler(req, reply) {
       //reply({ time: (new Date()).toISOString() });
-      server.log(["info"],"***** got it");
+      //server.log(["info"],"***** got it");
       server.plugins.elasticsearch.callWithRequest(req, 'cluster.state').then(function (response) {
         reply(Object.keys(response.metadata.indices));
+      });
+    }
+  });
+  
+  
+  
+  server.route({
+    path: '/api/kibsegz/_stats',
+    method: 'GET',
+    handler(req, reply) {
+      server.plugins.elasticsearch.callWithRequest(req, 'cat.nodes',{
+        h: "n"
+      }).then(function (response) {
+        reply(response);
       });
     }
   });

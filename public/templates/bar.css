@@ -1,6 +1,6 @@
 
 body {
-  font: 10px sans-serif;
+  font: 12px sans-serif;
 }
 
 .params {
@@ -8,7 +8,7 @@ body {
 }
 
 .paramsItem {
-	margin-right: auto;
+	margin-right: 20px;
 }
 
 .axis path,

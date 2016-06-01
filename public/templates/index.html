@@ -1,10 +1,22 @@
 <div class="container">
   <div class="params">
     
+    
+    
+    <div class="paramsItem">
+      
+      <p>Select a Node</p>
+      <select ng-model="selectedNode" ng-options="node.name for node in nodes" ng-change="onNodeChange()">
+
+      </select>
+      
+    </div>
+    
+    
     <div class="paramsItem">
       
       <p>Select an index</p>
-      <select ng-model="selectedIndex" ng-options="index.name for index in indices" ng-change="onChange()">
+      <select ng-model="selectedIndex" ng-options="index.name for index in indices" ng-change="onIndexChange()">
 
       </select>
       

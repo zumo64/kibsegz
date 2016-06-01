@@ -25,14 +25,20 @@ uiModules
 .get('app/kibsegz', [])
 .controller 'mainController',   ($http,$scope,$interval) ->
   $scope.indices = []
+  $scope.nodes = []
   $scope.shards = []
   $scope.rates = [{value:0},{value:5},{value:10}]
   selRate = 0
   indexName = null
+  nodeName = null
   pro = null
   
   
   getMetrics = () ->
+    
+    if !indexName or !nodeName
+      return
+    
     $http.get("../api/kibsegz/#{$scope.selectedIndex.name}").then (response) ->
       nbShards = response.data._shards.successful
       #console.log "num shards #{nbShards} #{indexName}"
@@ -53,7 +59,6 @@ uiModules
           if segments.hasOwnProperty(segmentKey)
             segmentDetails = segments[segmentKey]
             shard.segments.push(segmentDetails)
-
     return
   
   
@@ -66,6 +71,15 @@ uiModules
     , selRate * 1000)
     
   
+  $http.get("../api/kibsegz/_stats").then (response) ->
+    if response
+      console.log "#{JSON.stringify(response)}"
+      lines = response.data
+      nodes = response.data.split("\n")
+      for node in nodes when node
+        $scope.nodes.push({name:node})
+
+
   # Get list of indices
   $http.get("../api/kibsegz/_health").then (response) ->
     if response.data? 
@@ -87,7 +101,7 @@ uiModules
     return     
        
   # index selection 
-  $scope.onChange = () ->
+  $scope.onIndexChange = () ->
     if pro?
       $interval.cancel(pro)
     #console.log "onChange #{$scope.selectedIndex.name}"
@@ -96,10 +110,19 @@ uiModules
     getMetrics()
     if selRate > 0
       startInterval()
-    
-    
     return
-    
+ 
+  # index selection 
+  $scope.onNodeChange = () ->
+    if pro?
+      $interval.cancel(pro)
+    #console.log "onChange #{$scope.selectedIndex.name}"
+    nodeName = "#{$scope.selectedNode.name}"
+    $scope.shards = []
+    getMetrics()
+    if selRate > 0
+      startInterval()
+    return
     
     
     

@@ -32,8 +32,9 @@
   });
 
   uiModules.get('app/kibsegz', []).controller('mainController', function($http, $scope, $interval) {
-    var getMetrics, indexName, pro, selRate, startInterval;
+    var getMetrics, indexName, nodeName, pro, selRate, startInterval;
     $scope.indices = [];
+    $scope.nodes = [];
     $scope.shards = [];
     $scope.rates = [
       {
@@ -46,8 +47,12 @@
     ];
     selRate = 0;
     indexName = null;
+    nodeName = null;
     pro = null;
     getMetrics = function() {
+      if (!indexName || !nodeName) {
+        return;
+      }
       $http.get("../api/kibsegz/" + $scope.selectedIndex.name).then(function(response) {
         var i, nbShards, numSegments, segmentDetails, segmentKey, segments, segmentsHead, shard, shardDetails, _i, _results;
         nbShards = response.data._shards.successful;
@@ -83,6 +88,24 @@
         return getMetrics(indexName);
       }, selRate * 1000);
     };
+    $http.get("../api/kibsegz/_stats").then(function(response) {
+      var lines, node, nodes, _i, _len, _results;
+      if (response) {
+        console.log("" + (JSON.stringify(response)));
+        lines = response.data;
+        nodes = response.data.split("\n");
+        _results = [];
+        for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+          node = nodes[_i];
+          if (node) {
+            _results.push($scope.nodes.push({
+              name: node
+            }));
+          }
+        }
+        return _results;
+      }
+    });
     $http.get("../api/kibsegz/_health").then(function(response) {
       var index, _i, _len, _ref, _results;
       if (response.data != null) {
@@ -111,11 +134,22 @@
         $interval.cancel(pro);
       }
     };
-    return $scope.onChange = function() {
+    $scope.onIndexChange = function() {
       if (pro != null) {
         $interval.cancel(pro);
       }
       indexName = "" + $scope.selectedIndex.name;
+      $scope.shards = [];
+      getMetrics();
+      if (selRate > 0) {
+        startInterval();
+      }
+    };
+    return $scope.onNodeChange = function() {
+      if (pro != null) {
+        $interval.cancel(pro);
+      }
+      nodeName = "" + $scope.selectedNode.name;
       $scope.shards = [];
       getMetrics();
       if (selRate > 0) {
