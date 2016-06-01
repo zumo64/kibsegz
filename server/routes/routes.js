@@ -18,9 +18,7 @@ export default function (server) {
     path: '/api/kibsegz/_stats',
     method: 'GET',
     handler(req, reply) {
-      server.plugins.elasticsearch.callWithRequest(req, 'cat.nodes',{
-        h: "n"
-      }).then(function (response) {
+      server.plugins.elasticsearch.callWithRequest(req, 'nodes.stats').then(function (response) {
         reply(response);
       });
     }

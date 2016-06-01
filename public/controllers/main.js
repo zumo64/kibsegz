@@ -32,8 +32,10 @@
   });
 
   uiModules.get('app/kibsegz', []).controller('mainController', function($http, $scope, $interval) {
-    var getMetrics, indexName, nodeName, pro, selRate, startInterval;
+    var getMetrics, indexName, nodeName, pro, selRate, selectedNodeId, startInterval;
     $scope.indices = [];
+    $scope.nbNodes = 0;
+    selectedNodeId = null;
     $scope.nodes = [];
     $scope.shards = [];
     $scope.rates = [
@@ -53,33 +55,30 @@
       if (!indexName || !nodeName) {
         return;
       }
-      $http.get("../api/kibsegz/" + $scope.selectedIndex.name).then(function(response) {
-        var i, nbShards, numSegments, segmentDetails, segmentKey, segments, segmentsHead, shard, shardDetails, _i, _results;
+      return $http.get("../api/kibsegz/" + $scope.selectedIndex.name).then(function(response) {
+        var i, n, nbShards, numSegments, segmentDetails, segmentKey, segments, segmentsHead, shard, shardDetails, _i, _j, _ref;
         nbShards = response.data._shards.successful;
         shardDetails = response.data.indices["" + indexName].shards;
-        _results = [];
         for (i = _i = 0; 0 <= nbShards ? _i < nbShards : _i > nbShards; i = 0 <= nbShards ? ++_i : --_i) {
           shard = shardDetails["" + i];
-          shard.segments = [];
-          $scope.shards.push(shard);
-          segmentsHead = shardDetails["" + i][0];
-          numSegments = segmentsHead.num_search_segments;
-          segments = segmentsHead.segments;
-          _results.push((function() {
-            var _results1;
-            _results1 = [];
-            for (segmentKey in segments) {
-              if (segments.hasOwnProperty(segmentKey)) {
-                segmentDetails = segments[segmentKey];
-                _results1.push(shard.segments.push(segmentDetails));
-              } else {
-                _results1.push(void 0);
+          if (shard != null) {
+            shard.segments = [];
+            $scope.shards.push(shard);
+            for (n = _j = 0, _ref = $scope.nbNodes; 0 <= _ref ? _j < _ref : _j > _ref; n = 0 <= _ref ? ++_j : --_j) {
+              segmentsHead = shardDetails["" + i][n];
+              if ((segmentsHead != null) && segmentsHead.routing.node === selectedNodeId) {
+                numSegments = segmentsHead.num_search_segments;
+                segments = segmentsHead.segments;
+                for (segmentKey in segments) {
+                  if (segments.hasOwnProperty(segmentKey)) {
+                    segmentDetails = segments[segmentKey];
+                    shard.segments.push(segmentDetails);
+                  }
+                }
               }
             }
-            return _results1;
-          })());
+          }
         }
-        return _results;
       });
     };
     startInterval = function() {
@@ -89,17 +88,18 @@
       }, selRate * 1000);
     };
     $http.get("../api/kibsegz/_stats").then(function(response) {
-      var lines, node, nodes, _i, _len, _results;
+      var node, nodeIds, nodes, _i, _len, _results;
       if (response) {
-        console.log("" + (JSON.stringify(response)));
-        lines = response.data;
-        nodes = response.data.split("\n");
+        $scope.nbNodes = response.data._nodes.total;
+        nodes = response.data.nodes;
+        nodeIds = Object.keys(nodes);
         _results = [];
-        for (_i = 0, _len = nodes.length; _i < _len; _i++) {
-          node = nodes[_i];
+        for (_i = 0, _len = nodeIds.length; _i < _len; _i++) {
+          node = nodeIds[_i];
           if (node) {
             _results.push($scope.nodes.push({
-              name: node
+              name: nodes[node].name,
+              id: node
             }));
           }
         }
@@ -146,10 +146,18 @@
       }
     };
     return $scope.onNodeChange = function() {
+      var node, _i, _len, _ref;
       if (pro != null) {
         $interval.cancel(pro);
       }
       nodeName = "" + $scope.selectedNode.name;
+      _ref = $scope.nodes;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        node = _ref[_i];
+        if (node.name === nodeName) {
+          selectedNodeId = node.id;
+        }
+      }
       $scope.shards = [];
       getMetrics();
       if (selRate > 0) {
