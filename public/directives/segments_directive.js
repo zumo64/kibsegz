@@ -21,8 +21,9 @@
             aSegment = _ref[s];
             data.push({
               segment: "" + s,
-              docs: aSegment.num_docs,
-              deleted: aSegment.deleted_docs
+              num_docs: aSegment.num_docs,
+              deleted: aSegment.deleted_docs,
+              size: aSegment.size_in_bytes
             });
           }
           if ((data != null) && data.length > 0) {

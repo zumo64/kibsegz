@@ -15,8 +15,9 @@ app.directive 'segment',  ($compile, $rootScope) ->
         #console.log "#{aSegment}"
         data.push(
           segment:"#{s}"
-          docs:aSegment.num_docs,
+          num_docs:aSegment.num_docs,
           deleted:aSegment.deleted_docs
+          size:aSegment.size_in_bytes
         )
       if data? and data.length > 0
         d3bar($elem.get(0), data)
