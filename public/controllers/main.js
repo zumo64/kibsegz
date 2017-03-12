@@ -21,8 +21,6 @@
 
   segmentsChooseIndex = require('../templates/index.html');
 
-  chrome.setNavBackground('#222222').setTabs([]);
-
   uiRoutes.enable();
 
   uiRoutes.when('/', {
