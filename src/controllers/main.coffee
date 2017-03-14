@@ -11,9 +11,6 @@ require '../templates/bar.css'
 
 segmentsChooseIndex =  require '../templates/index.html'
 
-
-#chrome.setNavBackground('#222222').setTabs([])
-
 uiRoutes.enable()
 uiRoutes.when '/',
   template: segmentsChooseIndex,
@@ -29,7 +26,8 @@ uiModules
   selectedNodeId = null
   $scope.nodes = []
   $scope.shards = []
-  $scope.rates = [{value:0},{value:5},{value:10}]
+  $scope.selectedRate = {value:"Refresh Rate"}
+  $scope.rates = [$scope.selectedRate,{value:0},{value:5},{value:10}] 
   selRate = 0
   indexName = null
   nodeName = null
@@ -83,15 +81,19 @@ uiModules
       $scope.nbNodes = response.data._nodes.total
       nodes = response.data.nodes
       nodeIds = Object.keys(nodes)
+      
+      $scope.selectedNode = {name:"Select Node", id:0}
+      $scope.nodes.push($scope.selectedNode)
       for node in nodeIds when node
         #console.log "#{node} #{nodes[node].name}"
         $scope.nodes.push({name:nodes[node].name, id:node})
-        
-
-
+      
+  
   # Get list of indices
   $http.get("../api/kibsegz/_health").then (response) ->
     if response.data? 
+      $scope.selectedIndex = {name:"Select Index"}
+      $scope.indices.push($scope.selectedIndex)
       for index in response.data when index
         $scope.indices.push({name:index})
     else

@@ -36,8 +36,11 @@
     selectedNodeId = null;
     $scope.nodes = [];
     $scope.shards = [];
+    $scope.selectedRate = {
+      value: "Refresh Rate"
+    };
     $scope.rates = [
-      {
+      $scope.selectedRate, {
         value: 0
       }, {
         value: 5
@@ -91,6 +94,11 @@
         $scope.nbNodes = response.data._nodes.total;
         nodes = response.data.nodes;
         nodeIds = Object.keys(nodes);
+        $scope.selectedNode = {
+          name: "Select Node",
+          id: 0
+        };
+        $scope.nodes.push($scope.selectedNode);
         _results = [];
         for (_i = 0, _len = nodeIds.length; _i < _len; _i++) {
           node = nodeIds[_i];
@@ -107,6 +115,10 @@
     $http.get("../api/kibsegz/_health").then(function(response) {
       var index, _i, _len, _ref, _results;
       if (response.data != null) {
+        $scope.selectedIndex = {
+          name: "Select Index"
+        };
+        $scope.indices.push($scope.selectedIndex);
         _ref = response.data;
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
