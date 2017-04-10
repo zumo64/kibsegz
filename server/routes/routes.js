@@ -25,13 +25,24 @@ export default function (server) {
   
   // Add a route to retrieve the status of an index by its name
   server.route({
-    // We can use path variables in here, that can be accessed on the request
-    // object in the handler.
     path: '/api/kibsegz/{index}',
     method: 'GET',
     handler(req, reply) {
         server.plugins.elasticsearch.getCluster('data').callWithRequest(req, 'indices.segments', {
         index: req.params.index
+      }).then(function (response) {
+        reply(response);
+      });
+    }
+  });
+  
+  // Node Stats per node
+  server.route({
+    path: '/api/kibsegz/{node}/stats',
+    method: 'GET',
+    handler(req, reply) {
+        server.plugins.elasticsearch.getCluster('data').callWithRequest(req, 'nodes.stats', {
+        nodeId: req.params.node
       }).then(function (response) {
         reply(response);
       });

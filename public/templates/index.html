@@ -1,6 +1,10 @@
+
+
+
+
+
 <div class="kuiToolBar">
     <div class="kuiTitle">
-      Segments
     </div>
     
     <div class="kuiToolBarSection">
@@ -17,13 +21,94 @@
     </div>
 </div>
 
-  <div class="kuiPanelBody">
-    <div class="segments">
-        <span ng-repeat="shard in shards">  
-          <segment metrics="shard"/>
-        </span>
+
+<div class="kuiTabs">
+  <button
+    class="kuiTab"
+    title="Segments"
+  >
+    Stats
+  </button>
+
+  <button
+    class="kuiTab"
+    title="Threads"
+  >
+    Segments
+  </button>
+
+   
+</div>
+
+
+
+<div class="kuiPanel kuiPanel--withHeader kuiVerticalRhythm" ng-repeat="shard in shards" ng-if="tabSelected === 1">
+  <div class="kuiPanelHeader">
+    <div class="kuiPanelHeader__title">
+      Shard {{shard.nbShard}} 
+      <span ng-if="shard.isPrimary">PRIMARY</span>
+      <span ng-if="shard.isReplica">REPLICA</span>
     </div>
   </div>
+
+  <div class="kuiPanelBody">
+     <segment metrics="shard" />
+  </div>
+</div>
+
+
+
+
+
+
+
+<div  lass="kuiPanelBody" ng-if="tabSelected === 0">
+ <table class="kuiTable">
+   <thead>
+     <tr>
+       <th class="kuiTableHeaderCell kuiTableHeaderCell">
+         Category
+      </th>
+       <th class="kuiTableHeaderCell kuiTableHeaderCell" >
+         Status
+       </th>
+     </tr>
+   </thead>
+
+   <tbody>
+     
+
+     <tr class="kuiTableRow">
+       
+       <td class="kuiTableRowCell" colspan="2">
+         <div class="kuiTableRowCell__liner">
+           <button class="kuiToggleButton">
+             <span class="kuiToggleButton__icon kuiIcon fa-caret-down"></span>
+            Threads Pools
+           </button>
+         </div>
+       </td>
+     </tr>
+
+     <tr class="kuiTableRow">
+       <td class="kuiTableRowCell kuiTableRowCell--expanded" colspan="2">
+         <div class="kuiTableRowCell__liner" ng-repeat="stat in stats.tp">
+           <h3 class="kuiSubTitle">
+              {{stat.name}}
+            </h3>
+           <p class="kuiText">
+             Threads {{stat.threads}}
+           </p>
+         </div>
+       </td>
+     </tr>
+
+    
+   </tbody>
+ </table>
+</div>
+
+  
 
 
 

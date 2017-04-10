@@ -28,33 +28,68 @@ uiModules
   $scope.shards = []
   $scope.selectedRate = {value:"Refresh Rate"}
   $scope.rates = [$scope.selectedRate,{value:0},{value:5},{value:10}] 
+  
+  $scope.stats =  {}
+  $scope.stats.tp = []
+  $scope.tabSelected = 0
+  
   selRate = 0
   indexName = null
   nodeName = null
   pro = null
   
+  $tabs = $('.kuiTab');
+  $selectedTab = undefined;
+
+  if !$tabs.length
+    throw new Error('$tabs missing')
+
+  selectTab = (tab) ->
+    if $selectedTab
+      $selectedTab.removeClass('kuiTab-isSelected')
+
+    $selectedTab = $(tab);
+    $selectedTab.addClass('kuiTab-isSelected')
+    if tab == $tabs[0]
+      $scope.tabSelected= 0 
+      #console.log "#{$scope.tabSelected}"    
+    else if tab == $tabs[1]
+      $scope.tabSelected = 1
+      console.log "#{$scope.tabSelected}" 
+    
+
+  $tabs.on('click',  (event) ->
+    selectTab(event.target)
+    $scope.$apply() 
+  )
+# segments
+  selectTab($tabs[0])
+  
   
   getMetrics = () ->
-    
     if !indexName or !nodeName
       return
-    
     $http.get("../api/kibsegz/#{$scope.selectedIndex.name}").then (response) ->
-      nbShards = response.data._shards.successful
+      #nbShards = response.data._shards.successful
       #console.log "num shards #{nbShards} #{indexName}"
+      #console.log JSON.stringify(response)
+      
       shardDetails = response.data.indices["#{indexName}"].shards
       
-      for i in [0...nbShards]
-        shard = shardDetails["#{i}"]
-        
-        if shard?
-          shard.segments = []
-          $scope.shards.push(shard)
-        
-          for n in [0...$scope.nbNodes]
+      # iterate shards
+      for shardNumber of shardDetails
+        shard = shardDetails[shardNumber]
+        if shard? 
           
-            segmentsHead = shardDetails["#{i}"][n]
+          shard.segments = []
+          
+          pushedShard = false
+          # iterate witin shard details
+          #for n in [0...$scope.nbNodes]
+          for segmentsHead in shardDetails[shardNumber]
+            #segmentsHead = shardDetails[shardNumber][n]
             if segmentsHead? and segmentsHead.routing.node is selectedNodeId
+              
               numSegments = segmentsHead.num_search_segments
               #console.log ".....num segments #{numSegments}"
               segments = segmentsHead.segments
@@ -63,8 +98,34 @@ uiModules
                 if segments.hasOwnProperty(segmentKey)
                   segmentDetails = segments[segmentKey]
                   shard.segments.push(segmentDetails)
+                  if !pushedShard
+                    shard.isPrimary = segmentsHead.routing.primary
+                    shard.isReplica = !segmentsHead.routing.primary
+                    shard.nbShard = shardNumber
+                    $scope.shards.push(shard)
+                    pushedShard=true
+        #console.log "#{$scope.shards.length}"
       return
   
+  
+  unpackSelectedNodeStats = (stats) ->
+    
+    for aTpstat of stats.thread_pool
+      # sneak in the name ot the thread pool
+      stats.thread_pool[aTpstat].name = aTpstat
+      $scope.stats.tp.push(stats.thread_pool[aTpstat])
+    console.log "done"
+    return
+    
+  
+  
+  getSelectedNodeStats = () ->
+    if !nodeName
+      return
+    $http.get("../api/kibsegz/#{selectedNodeId}/stats").then (response) ->
+      #console.log JSON.stringify(response)
+      unpackSelectedNodeStats(response.data.nodes["#{selectedNodeId}"])
+      
   
   
   
@@ -98,6 +159,8 @@ uiModules
         $scope.indices.push({name:index})
     else
       alert "No indices available"
+      
+      
        
        
   $scope.onRateChange = () ->
@@ -118,7 +181,10 @@ uiModules
     #console.log "onChange #{$scope.selectedIndex.name}"
     indexName = "#{$scope.selectedIndex.name}"
     $scope.shards = []
-    getMetrics()
+    
+    if $scope.tabSelected is 1
+      getMetrics()
+    
     if selRate > 0
       startInterval()
     return
@@ -134,10 +200,16 @@ uiModules
         selectedNodeId = node.id
     
     $scope.shards = []
-    getMetrics()
+    if $scope.tabSelected is 0
+      getSelectedNodeStats() 
+    else if $scope.tabSelected is 1
+      getMetrics()
+    
     if selRate > 0
       startInterval()
     return
+    
+  
     
     
     

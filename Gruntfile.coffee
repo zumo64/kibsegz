@@ -49,7 +49,7 @@ module.exports = (grunt) ->
   
   grunt.registerTask 'clean', ['clean_files']
    
-  grunt.registerTask 'make', ['clean','coffee:controllers']
+  grunt.registerTask 'make', ['clean','coffee:controllers','coffee:directives']
   
   
 
