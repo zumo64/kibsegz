@@ -30,7 +30,7 @@
   });
 
   uiModules.get('app/kibsegz', []).controller('mainController', function($http, $scope, $interval) {
-    var getMetrics, indexName, nodeName, pro, selRate, selectedNodeId, startInterval;
+    var $selectedTab, $tabs, getMetrics, getSelectedNodeStats, indexName, nodeName, pro, selRate, selectTab, selectedNodeId, startInterval, unpackSelectedNodeStats;
     $scope.indices = [];
     $scope.nbNodes = 0;
     selectedNodeId = null;
@@ -48,25 +48,51 @@
         value: 10
       }
     ];
+    $scope.stats = {};
+    $scope.stats.tp = [];
+    $scope.tabSelected = 0;
     selRate = 0;
     indexName = null;
     nodeName = null;
     pro = null;
+    $tabs = $('.kuiTab');
+    $selectedTab = void 0;
+    if (!$tabs.length) {
+      throw new Error('$tabs missing');
+    }
+    selectTab = function(tab) {
+      if ($selectedTab) {
+        $selectedTab.removeClass('kuiTab-isSelected');
+      }
+      $selectedTab = $(tab);
+      $selectedTab.addClass('kuiTab-isSelected');
+      if (tab === $tabs[0]) {
+        return $scope.tabSelected = 0;
+      } else if (tab === $tabs[1]) {
+        $scope.tabSelected = 1;
+        return console.log("" + $scope.tabSelected);
+      }
+    };
+    $tabs.on('click', function(event) {
+      selectTab(event.target);
+      return $scope.$apply();
+    });
+    selectTab($tabs[0]);
     getMetrics = function() {
       if (!indexName || !nodeName) {
         return;
       }
       return $http.get("../api/kibsegz/" + $scope.selectedIndex.name).then(function(response) {
-        var i, n, nbShards, numSegments, segmentDetails, segmentKey, segments, segmentsHead, shard, shardDetails, _i, _j, _ref;
-        nbShards = response.data._shards.successful;
+        var numSegments, pushedShard, segmentDetails, segmentKey, segments, segmentsHead, shard, shardDetails, shardNumber, _i, _len, _ref;
         shardDetails = response.data.indices["" + indexName].shards;
-        for (i = _i = 0; 0 <= nbShards ? _i < nbShards : _i > nbShards; i = 0 <= nbShards ? ++_i : --_i) {
-          shard = shardDetails["" + i];
+        for (shardNumber in shardDetails) {
+          shard = shardDetails[shardNumber];
           if (shard != null) {
             shard.segments = [];
-            $scope.shards.push(shard);
-            for (n = _j = 0, _ref = $scope.nbNodes; 0 <= _ref ? _j < _ref : _j > _ref; n = 0 <= _ref ? ++_j : --_j) {
-              segmentsHead = shardDetails["" + i][n];
+            pushedShard = false;
+            _ref = shardDetails[shardNumber];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              segmentsHead = _ref[_i];
               if ((segmentsHead != null) && segmentsHead.routing.node === selectedNodeId) {
                 numSegments = segmentsHead.num_search_segments;
                 segments = segmentsHead.segments;
@@ -74,12 +100,35 @@
                   if (segments.hasOwnProperty(segmentKey)) {
                     segmentDetails = segments[segmentKey];
                     shard.segments.push(segmentDetails);
+                    if (!pushedShard) {
+                      shard.isPrimary = segmentsHead.routing.primary;
+                      shard.isReplica = !segmentsHead.routing.primary;
+                      shard.nbShard = shardNumber;
+                      $scope.shards.push(shard);
+                      pushedShard = true;
+                    }
                   }
                 }
               }
             }
           }
         }
+      });
+    };
+    unpackSelectedNodeStats = function(stats) {
+      var aTpstat;
+      for (aTpstat in stats.thread_pool) {
+        stats.thread_pool[aTpstat].name = aTpstat;
+        $scope.stats.tp.push(stats.thread_pool[aTpstat]);
+      }
+      console.log("done");
+    };
+    getSelectedNodeStats = function() {
+      if (!nodeName) {
+        return;
+      }
+      return $http.get("../api/kibsegz/" + selectedNodeId + "/stats").then(function(response) {
+        return unpackSelectedNodeStats(response.data.nodes["" + selectedNodeId]);
       });
     };
     startInterval = function() {
@@ -150,7 +199,9 @@
       }
       indexName = "" + $scope.selectedIndex.name;
       $scope.shards = [];
-      getMetrics();
+      if ($scope.tabSelected === 1) {
+        getMetrics();
+      }
       if (selRate > 0) {
         startInterval();
       }
@@ -169,7 +220,11 @@
         }
       }
       $scope.shards = [];
-      getMetrics();
+      if ($scope.tabSelected === 0) {
+        getSelectedNodeStats();
+      } else if ($scope.tabSelected === 1) {
+        getMetrics();
+      }
       if (selRate > 0) {
         startInterval();
       }

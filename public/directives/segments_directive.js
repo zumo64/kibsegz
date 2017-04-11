@@ -5,16 +5,17 @@
 
   app = require('ui/modules').get('app/kibsegz', []);
 
-  app.directive('segment', function($compile, $rootScope) {
+  app.directive('segment', function($compile, $rootScope, $timeout) {
     return {
-      restrict: 'EA',
+      restrict: 'E',
+      replace: true,
       scope: {
-        metrics: '='
+        metrics: '=metrics'
       },
       link: function($scope, $elem) {
         var drawGraph;
         drawGraph = function() {
-          var aSegment, data, s, _i, _len, _ref;
+          var aSegment, children, data, s, toto, _i, _len, _ref;
           data = [];
           _ref = $scope.metrics.segments;
           for (s = _i = 0, _len = _ref.length; _i < _len; s = ++_i) {
@@ -27,6 +28,8 @@
             });
           }
           if ((data != null) && data.length > 0) {
+            toto = $elem.get(0);
+            children = $elem.children();
             d3bar($elem.get(0), data);
           }
         };
@@ -35,7 +38,7 @@
           myEl = angular.element(document.querySelector('div.d3-tip.n'));
           return myEl.remove();
         });
-        drawGraph();
+        return drawGraph();
       }
     };
   });
