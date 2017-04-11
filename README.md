@@ -1,11 +1,18 @@
-Segments Kibana plugin
-----------------------
-Kibana plugin displaying segment distribution
+# Kibsegz
 
 
-In development :
+## Features
 
-run from the shell :
-grunt watch
 
-That will compile the coffee files into js 
+## Contribute
+
+And then create a user mapped to the role:
+
+
+## Installing plugin
+
+
+## Supported Kibana versions
+This plugin is supported by:
+
+* Kibana 5.4.0
